@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="cache-control" content="no-store" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="index.css" />
+	</head>
+	<body>
+		<div class="flex">
+			<button
+				id="all-button"
+				onclick="window.location.href='./html/selectAll.html'"
+			>
+				Select all items
+			</button>
+			<button
+				onclick="window.location.href='./html/userSelect.html'"
+				id="user-button"
+			>
+				Select items by yourself
+			</button>
+			<button id="type-button">
+				Select all items of the same file type
+			</button>
+			<button id="bin-button">Select all items inside a bin</button>
+			<!-- <button id="refresh-button">refresh selected items</button> -->
+		</div>
+		<!-- <fieldset>
+			<form id="select-type-form">
+				<div>
+					<input
+						type="radio"
+						id="all-radio"
+						name="select-type"
+						value="all"
+						checked
+					/>
+					<label for="all-radio">Select all items</label>
+				</div>
+
+				<div>
+					<input
+						type="radio"
+						id="user-radio"
+						name="select-type"
+						value="user"
+					/>
+					<label for="user-radio">Select items by yourself</label>
+				</div>
+
+				<div>
+					<input
+						type="radio"
+						id="type-radio"
+						name="select-type"
+						value="filetype"
+					/>
+					<label for="type-radio"
+						>Select all items with the same file type</label
+					>
+				</div>
+
+				<div>
+					<input
+						type="radio"
+						id="bin-radio"
+						name="select-type"
+						value="bin"
+					/>
+					<label for="bin-radio">Select all items inside a bin</label>
+				</div>
+
+				<div>
+					<button type="submit">Submit</button>
+				</div>
+			</form>
+		</fieldset> -->
+
+		<script type="text/javascript" src="./js/libs/CSInterface.js"></script>
+		<script type="text/javascript" src="./js/index.js"></script>
+	</body>
+</html>

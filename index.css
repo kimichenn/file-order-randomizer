@@ -1,0 +1,108 @@
+* {
+	font-family: "Adobe Clean";
+	color: #d1d1d1;
+	font-size: 1rem;
+}
+/* 
+html,
+body {
+	height: 100%;
+} */
+
+fieldset {
+	border-width: 0.2rem;
+	border-color: #ffffff;
+	border-style: solid;
+	border-radius: 0.5rem;
+}
+
+label {
+	font-size: 1rem;
+}
+
+button {
+	background-color: #2e2e2e;
+	color: #d1d1d1;
+	border-width: 0.15rem;
+	border-color: #d1d1d1;
+	border-style: solid;
+	border-radius: 100rem;
+	padding: 0.2rem;
+	text-align: center;
+	margin: 0.3rem;
+	max-width: 40rem;
+	width: 100%;
+	display: block;
+}
+
+button:hover {
+	background-color: #212121;
+}
+
+button.active.focus,
+button.active:focus,
+button.focus,
+button:active.focus,
+button:active:focus,
+button:focus {
+	outline: none;
+	box-shadow: none;
+}
+
+/* div.big {
+	height: 100%;
+	position: relative;
+} */
+
+button.refresh-btn {
+	position: absolute;
+	width: 5rem;
+	bottom: 0.4rem;
+	max-width: 7rem;
+	right: 5.7rem;
+}
+
+button.start-btn {
+	position: absolute;
+	width: 5rem;
+	bottom: 0.4rem;
+	right: 0.3rem;
+	max-width: 7rem;
+}
+
+.flex {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+
+#app::-webkit-scrollbar {
+	display: block;
+}
+body::-webkit-scrollbar {
+	width: 0px;
+}
+::-webkit-scrollbar {
+	background-color: var(--color-scrollbar);
+	width: var(--width-scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+	width: var(--width-scrollbar-track);
+	background: var(--color-scrollbar-thumb);
+	border-radius: var(--radius-scrollbar-thumb);
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--color-scrollbar-thumb-hover);
+}
+::-webkit-scrollbar-resizer {
+	display: none;
+	width: 0px;
+	background-color: transparent;
+}
+::-webkit-scrollbar-button {
+	height: 0px;
+}
+::-webkit-scrollbar-corner {
+	display: none;
+}
