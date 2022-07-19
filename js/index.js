@@ -41,10 +41,14 @@ function selectItemsOfType() {
 function selectAllItems() {
 	console.log("aaah");
 	var checked = document.getElementById("include-bin").checked;
-	csInterface.evalScript("selectAllItems(" + checked + ")", function (res) {
-		console.log(res);
-		window.location.href = "../index.html";
-	});
+	var gapAll = parseInt(document.getElementById("gap-all").value);
+	csInterface.evalScript(
+		"selectAllItems(" + checked + "," + gapAll + ")",
+		function (res) {
+			console.log(res);
+			window.location.href = "../index.html";
+		}
+	);
 }
 
 function selectItemsFromUser() {

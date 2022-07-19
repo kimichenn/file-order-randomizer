@@ -1,6 +1,6 @@
 * {
 	font-family: "Adobe Clean";
-	color: #d1d1d1;
+	color: #a1a1a1;
 	font-size: 1rem;
 }
 /* 
@@ -11,7 +11,7 @@ body {
 
 fieldset {
 	border-width: 0.2rem;
-	border-color: #ffffff;
+	border-color: #a1a1a1;
 	border-style: solid;
 	border-radius: 0.5rem;
 }
@@ -21,10 +21,10 @@ label {
 }
 
 button {
-	background-color: #2e2e2e;
-	color: #d1d1d1;
-	border-width: 0.15rem;
-	border-color: #d1d1d1;
+	background-color: #141414;
+	color: #a1a1a1;
+	border-width: 0.1rem;
+	border-color: #a1a1a1;
 	border-style: solid;
 	border-radius: 100rem;
 	padding: 0.2rem;
@@ -36,7 +36,7 @@ button {
 }
 
 button:hover {
-	background-color: #212121;
+	background-color: #020202;
 }
 
 button.active.focus,
@@ -47,6 +47,8 @@ button:active:focus,
 button:focus {
 	outline: none;
 	box-shadow: none;
+	background-color: #d4d4d4;
+	color: #141414;
 }
 
 /* div.big {
@@ -69,6 +71,45 @@ button.start-btn {
 	right: 0.3rem;
 	max-width: 7rem;
 }
+
+button.back-btn {
+	position: absolute;
+	width: 5rem;
+	bottom: 0.4rem;
+	left: 0.3rem;
+	max-width: 7rem;
+}
+
+input[type="number"]::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+}
+
+input[type="number"] {
+	width: 4rem;
+	color: #d4d4d4;
+	background-color: #141414;
+	box-shadow: none;
+	border-width: 0.05rem;
+	border-color: rgba(94, 94, 94, 10);
+	border-style: solid;
+	border-radius: 0.5px;
+	margin-top: 0.5rem;
+	margin-left: 0.5rem;
+}
+input[type="number"]:focus {
+	outline-color: #4fb6ff;
+	outline-width: 0.5rem;
+	background-color: #ffffff;
+	color: #0f0f0f;
+}
+
+span.extra {
+	color: #7d7d7d;
+}
+
+/* ------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------- */
 
 .flex {
 	display: flex;
