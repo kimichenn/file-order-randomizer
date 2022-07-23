@@ -113,9 +113,9 @@ function selectAllItems(checked, gapSeconds) {
 	// Helper Functions
 	function getType(childInd) {
 		try {
-			var meta = rootItems.children[childInd].getProjectMetadata();
-		} catch (e) {
 			var meta = binItemAssignments[childInd].getProjectMetadata();
+		} catch (e) {
+			var meta = rootItems.children[childInd].getProjectMetadata();
 		}
 		var start =
 			meta.indexOf(
@@ -162,11 +162,30 @@ function selectAllItems(checked, gapSeconds) {
 		if (rootItems.children[i].type == 2) {
 			var childItemNum = rootItems.children[i];
 
+			// no nested bin
+			// 30-36 binItemAssignments
+			// upto 34 orderKey
+
+			// 1 nested bin
+			// 30-37 binItemAssignments
+			// upto 35 orderKey
+
+			// check if the items inside the bin is another bin
+			// var nestedBinInd = {};
+
+			// for (j = 0; j < childItemNum.children.numItems; j++) {
+			// 	if (childItemNum.children[j].type == 2) {
+			// 		nestedBinInd[i] = j;
+			// 	}
+			// }
+
 			// set the index of each bin with the value of the number of items inside
 			binInd[i] = childItemNum.children.numItems;
 
 			// dump the objects of every item in all the bins into this list
 			for (var j = 0; j < childItemNum.children.numItems; j++) {
+				// if (childItemNum.children[j].type == 2) {
+				// }
 				binItemIds.push(childItemNum.children[j]);
 			}
 		}
@@ -184,6 +203,7 @@ function selectAllItems(checked, gapSeconds) {
 
 	var binItemAssignments = {};
 
+	var nestedBins = 0;
 	var allVals = [];
 	for (var i = 0; i < numItems + binSum; i++) {
 		// Add the indexes of all items (excluding bin itself, but items in bins are added [would be the numbers at the end])
@@ -197,10 +217,21 @@ function selectAllItems(checked, gapSeconds) {
 		// it assign the extra numbers designted for the bins to its corresponding object
 		// then removes it from the original list (binItemIds)
 		if (i >= numItems) {
-			binItemAssignments[i] = binItemIds[0];
+			// if item in binItemIds (a list that contains all the items that are inside a bin) is a bin (nested bin)
+			// --> remove the index from allVals since it wont be used and remove it from binitemIds
+			// else assign the index to the item
+			if (binItemIds[0].type == 2) {
+				allVals.pop();
+				nestedBins++;
+			} else {
+				binItemAssignments[i] = binItemIds[0];
+			}
 			binItemIds.splice(0, 1);
 		}
 	}
+
+	// redefine binSum so that it removes the number of nested bins
+	binSum = binSum - nestedBins;
 
 	var orderKey = [];
 
