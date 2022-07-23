@@ -72,9 +72,43 @@ function refreshSelection() {
 	});
 }
 
-function selectItemsFromBin() {
-	console.log("aaajh");
-	csInterface.evalScript("selectItemsFromBin()", function (res) {
-		console.log(res);
+var binItem;
+
+function refreshBinSelection() {
+	console.log("refresh");
+	csInterface.evalScript("refreshBinSelection()", function (res) {
+		var parsedRes = JSON.parse(res);
+		var name = parsedRes[0].name;
+		if (parsedRes[0].type == 2) {
+			binItem = parsedRes[0];
+			document.getElementById("bin-selected").innerHTML =
+				name + " is selected.";
+		} else {
+			document.getElementById("bin-selected").innerHTML =
+				"Selected item is not a bin.";
+		}
 	});
+}
+
+function selectItemsInBin() {
+	refreshBinSelection();
+	var checked = document.getElementById("include-nested-bin").checked;
+	var gapBin = parseInt(document.getElementById("gap-bin").value);
+	var placeholder = "asd";
+	csInterface.evalScript(
+		// "selectItemsInBin(" + placeholder + "," + checked + "," + gapBin + ")",
+		"selectItemsInBin(" + true + "," + checked + "," + gapBin + ")",
+		function (res) {
+			console.log(res);
+			window.location.href = "../index.html";
+		}
+	);
+
+	// csInterface.evalScript(
+	// 	"selectAllItems(" + checked + "," + gapAll + ")",
+	// 	function (res) {
+	// 		console.log(res);
+	// 		window.location.href = "../index.html";
+	// 	}
+	// );
 }
