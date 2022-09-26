@@ -3,6 +3,26 @@
 	color: #a1a1a1;
 	font-size: 1rem;
 }
+
+h6 {
+	padding-top: 1rem;
+	margin: 0rem;
+	font-size: 1.07rem;
+	color: #bababa;
+}
+
+hr {
+	border: 0;
+	clear: both;
+	display: block;
+	width: 85%;
+	background-color: #bababa;
+	height: 0.1rem;
+	margin-bottom: 0.2rem;
+	margin-top: 0.1rem;
+	max-width: 34rem;
+}
+
 /* 
 html,
 body {
@@ -146,4 +166,9 @@ body::-webkit-scrollbar {
 }
 ::-webkit-scrollbar-corner {
 	display: none;
+}
+
+hr {
+	border-top: 2px;
+	color: white;
 }

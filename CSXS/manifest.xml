@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ExtensionManifest Version="6.0" ExtensionBundleId="com.test" ExtensionBundleVersion="2.0.1" ExtensionBundleName="test" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<ExtensionList>
-		<Extension Id="com.test" Version="2.0.1"  />
+		<Extension Id="com.fileorderrandomizer" Version="2.0.1"  />
 	</ExtensionList>
 	<ExecutionEnvironment>
 		<HostList>
@@ -12,12 +12,12 @@
 			<Locale Code="All" />
 		</LocaleList>
 		<RequiredRuntimeList>
-			<RequiredRuntime Name="CSXS" Version="6.0" />
+			<RequiredRuntime Name="CSXS" Version="7.0" />
 		</RequiredRuntimeList>
 	</ExecutionEnvironment>
 
 	<DispatchInfoList>
-		<Extension Id="com.test">
+		<Extension Id="com.fileorderrandomizer">
 			<DispatchInfo >
 				<Resources>
 					<MainPath>./index.html</MainPath>
@@ -34,7 +34,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Panel</Type>
-					<Menu>test</Menu>
+					<Menu>File Order Randomizer</Menu>
 					<Geometry>
 						<Size>
 							<Height>504</Height>
