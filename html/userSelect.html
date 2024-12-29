@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="cache-control" content="no-store" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="../index.css" />
+	</head>
+	<body onload="refreshSelection()">
+		<div>
+			<p>Please select the items to be randomized.</p>
+			<p id="elements-selected"></p>
+		</div>
+		<div class="big">
+			<button id="user-start-button" class="start-btn">Start</button>
+			<button
+				id="user-refresh-button"
+				class="refresh-btn"
+				onclick="refreshSelection()"
+			>
+				Refresh
+			</button>
+		</div>
+		<script type="text/javascript" src="../js/libs/CSInterface.js"></script>
+		<script type="text/javascript" src="../js/index.js"></script>
+	</body>
+</html>

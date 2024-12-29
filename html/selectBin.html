@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="cache-control" content="no-store" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="../index.css" />
+	</head>
+	<body onload="refreshBinSelection()">
+		<div>
+			<p>This will randomize all the items inside the selected bin.</p>
+			<p>Please select a bin from the Project Panel.</p>
+			<p id="bin-selected"></p>
+		</div>
+		<div>
+			<input
+				type="checkbox"
+				id="include-nested-bin"
+				name="bin-parameters"
+				value="Include nested bin"
+			/>
+			<label for="include-nested-bin">
+				Include bins within the selected bin
+			</label>
+		</div>
+		<div>
+			<label for="gap-bin">
+				Seconds between clips
+				<span class="extra">&nbsp;(Default: 0)</span>:
+			</label>
+			<input type="number" id="gap-bin" name="bin-parameters" value="0" />
+		</div>
+		<div>
+			<button
+				onclick="window.location.href='../index.html'"
+				id="bin-back-button"
+				class="back-btn"
+			>
+				Back
+			</button>
+		</div>
+		<div class="big">
+			<button
+				id="bin-start-button"
+				class="start-btn"
+				onclick="selectItemsInBin()"
+			>
+				Start
+			</button>
+			<button
+				id="bin-refresh-button"
+				class="refresh-btn"
+				onclick="refreshBinSelection()"
+			>
+				Refresh
+			</button>
+		</div>
+		<script type="text/javascript" src="../js/libs/CSInterface.js"></script>
+		<script type="text/javascript" src="../js/index.js"></script>
+	</body>
+</html>

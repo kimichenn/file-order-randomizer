@@ -1,0 +1,174 @@
+* {
+	font-family: "Adobe Clean";
+	color: #a1a1a1;
+	font-size: 1rem;
+}
+
+h6 {
+	padding-top: 1rem;
+	margin: 0rem;
+	font-size: 1.07rem;
+	color: #bababa;
+}
+
+hr {
+	border: 0;
+	clear: both;
+	display: block;
+	width: 85%;
+	background-color: #bababa;
+	height: 0.1rem;
+	margin-bottom: 0.2rem;
+	margin-top: 0.1rem;
+	max-width: 34rem;
+}
+
+/* 
+html,
+body {
+	height: 100%;
+} */
+
+fieldset {
+	border-width: 0.2rem;
+	border-color: #a1a1a1;
+	border-style: solid;
+	border-radius: 0.5rem;
+}
+
+label {
+	font-size: 1rem;
+}
+
+button {
+	background-color: #141414;
+	color: #a1a1a1;
+	border-width: 0.1rem;
+	border-color: #a1a1a1;
+	border-style: solid;
+	border-radius: 100rem;
+	padding: 0.2rem;
+	text-align: center;
+	margin: 0.3rem;
+	max-width: 40rem;
+	width: 100%;
+	display: block;
+}
+
+button:hover {
+	background-color: #020202;
+}
+
+button.active.focus,
+button.active:focus,
+button.focus,
+button:active.focus,
+button:active:focus,
+button:focus {
+	outline: none;
+	box-shadow: none;
+	background-color: #d4d4d4;
+	color: #141414;
+}
+
+/* div.big {
+	height: 100%;
+	position: relative;
+} */
+
+button.refresh-btn {
+	position: absolute;
+	width: 5rem;
+	bottom: 0.4rem;
+	max-width: 7rem;
+	right: 5.7rem;
+}
+
+button.start-btn {
+	position: absolute;
+	width: 5rem;
+	bottom: 0.4rem;
+	right: 0.3rem;
+	max-width: 7rem;
+}
+
+button.back-btn {
+	position: absolute;
+	width: 5rem;
+	bottom: 0.4rem;
+	left: 0.3rem;
+	max-width: 7rem;
+}
+
+input[type="number"]::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+}
+
+input[type="number"] {
+	width: 4rem;
+	color: #d4d4d4;
+	background-color: #141414;
+	box-shadow: none;
+	border-width: 0.05rem;
+	border-color: rgba(94, 94, 94, 10);
+	border-style: solid;
+	border-radius: 0.5px;
+	margin-top: 0.5rem;
+	margin-left: 0.5rem;
+}
+input[type="number"]:focus {
+	outline-color: #4fb6ff;
+	outline-width: 0.5rem;
+	background-color: #ffffff;
+	color: #0f0f0f;
+}
+
+span.extra {
+	color: #7d7d7d;
+}
+
+/* ------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------- */
+
+.flex {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+
+#app::-webkit-scrollbar {
+	display: block;
+}
+body::-webkit-scrollbar {
+	width: 0px;
+}
+::-webkit-scrollbar {
+	background-color: var(--color-scrollbar);
+	width: var(--width-scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+	width: var(--width-scrollbar-track);
+	background: var(--color-scrollbar-thumb);
+	border-radius: var(--radius-scrollbar-thumb);
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--color-scrollbar-thumb-hover);
+}
+::-webkit-scrollbar-resizer {
+	display: none;
+	width: 0px;
+	background-color: transparent;
+}
+::-webkit-scrollbar-button {
+	height: 0px;
+}
+::-webkit-scrollbar-corner {
+	display: none;
+}
+
+hr {
+	border-top: 2px;
+	color: white;
+}

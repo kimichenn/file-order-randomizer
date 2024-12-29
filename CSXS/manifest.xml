@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="6.0" ExtensionBundleId="file.order.randomizer" ExtensionBundleVersion="2.0.2" ExtensionBundleName="FileOrderRandomizer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<ExtensionList>
+		<Extension Id="file.order.randomizer" Version="2.0.2"  />
+	</ExtensionList>
+	<ExecutionEnvironment>
+		<HostList>
+			<Host Name="PPRO" Version="13.0"/>
+
+		</HostList>
+		<LocaleList>
+			<Locale Code="All" />
+		</LocaleList>
+		<RequiredRuntimeList>
+			<RequiredRuntime Name="CSXS" Version="7.0" />
+		</RequiredRuntimeList>
+	</ExecutionEnvironment>
+
+	<DispatchInfoList>
+		<Extension Id="file.order.randomizer">
+			<DispatchInfo >
+				<Resources>
+					<MainPath>./index.html</MainPath>
+					<ScriptPath>./jsx/index.jsx</ScriptPath>
+					<CEFCommandLine>
+						<Parameter>--disable-site-isolation-trials</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--allow-file-access-from-files</Parameter>
+        				<Parameter>--mixed-context</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Panel</Type>
+					<Menu>File Order Randomizer</Menu>
+					<Geometry>
+						<Size>
+							<Height>504</Height>
+							<Width>504</Width>
+						</Size>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+	</DispatchInfoList>
+</ExtensionManifest>

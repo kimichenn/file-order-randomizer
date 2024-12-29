@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="cache-control" content="no-store" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="index.css" />
+	</head>
+	<body>
+		<div class="flex">
+			<button
+				id="all-button"
+				onclick="window.location.href='./html/selectAll.html'"
+			>
+				Select all items
+			</button>
+
+			<button
+				id="bin-button"
+				onclick="window.location.href='./html/selectBin.html'"
+			>
+				Select all items inside a bin
+			</button>
+
+			<h6>Coming Soon</h6>
+			<hr />
+			<button
+				disabled
+				onclick="window.location.href='./html/userSelect.html'"
+				id="user-button"
+			>
+				Select items by yourself
+			</button>
+
+			<button disabled id="type-button">
+				Select all items of the same file type
+			</button>
+		</div>
+
+		<script type="text/javascript" src="./js/libs/CSInterface.js"></script>
+		<script type="text/javascript" src="./js/index.js"></script>
+	</body>
+</html>
