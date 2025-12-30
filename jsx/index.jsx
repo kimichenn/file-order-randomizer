@@ -63,537 +63,611 @@ if (!Array.prototype.indexOf) {
 	};
 }
 
-// Global Vars
-var rootItems = app.project.rootItem;
-var item = rootItems.children;
-var numItems = rootItems.children.numItems;
+// ============================================================================
+// UNIFIED RANDOMIZATION ENGINE
+// ============================================================================
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-var selection = app.getCurrentProjectViewSelection();
-
-function refreshSelection() {
-	selection = app.getCurrentProjectViewSelection();
-	// return JSON.lave(selection);
-	return JSON.stringify(selection);
+/**
+ * Helper: Get media type from project item metadata
+ */
+function getMediaType(item) {
+	try {
+		var meta = item.getProjectMetadata();
+		var start = meta.indexOf("<premierePrivateProjectMetaData:Column.Intrinsic.MediaType>") + 59;
+		var end = meta.indexOf("</premierePrivateProjectMetaData:Column.Intrinsic.MediaType>");
+		var type = meta.slice(start, end);
+		
+		// Normalize types
+		if (type === "Still Image") return "Image";
+		// Return specific types for logic handling
+		return type;
+	} catch (e) {
+		return "Unknown";
+	}
 }
 
-function selectItemsFromUser() {
-	alert("selected " + selection.length.toString() + " items");
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function selectItemsOfType() {
-	app.project.rootItem.children[0].select();
-	alert(
-		rootItems.children[0].name +
-			" has been selected; type: " +
-			rootItems.children[0].type
-	);
-}
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-function refreshBinSelection() {
-	selection = app.getCurrentProjectViewSelection();
-	return JSON.stringify(selection);
-}
-
-function selectItemsInBin(binItem, checked, gapSeconds) {
-	// redefinition of numItems to suit the context of this function
-	binItem = selection[0];
-	numItems = binItem.children.numItems;
-
-	// default value
-	gapSeconds = typeof gapSeconds !== "undefined" ? gapSeconds : 0;
-	// Helper Functions
-	function getType(childInd) {
+/**
+ * Helper: Recursively collect items from bins with depth control
+ */
+function collectItemsRecursive(parentItem, currentDepth, maxDepth, filterType, includeSequences) {
+	var items = [];
+	
+	if (!parentItem) {
+		return items;
+	}
+	
+	// Safely get children count
+	var numItems = 0;
+	try {
+		if (parentItem.children && typeof parentItem.children.numItems !== "undefined") {
+			numItems = parentItem.children.numItems;
+		}
+	} catch (e) {
+		return items;
+	}
+	
+	for (var i = 0; i < numItems; i++) {
 		try {
-			var meta = binItemAssignments[childInd].getProjectMetadata();
+			var item = parentItem.children[i];
+			if (!item) continue;
+			
+			var itemType = item.type;
+			
+			// Type 2 = Bin
+			if (itemType === 2) {
+				// If we haven't exceeded depth limit, recurse into this bin
+				if (maxDepth === -1 || currentDepth < maxDepth) {
+					var nestedItems = collectItemsRecursive(item, currentDepth + 1, maxDepth, filterType, includeSequences);
+					items = items.concat(nestedItems);
+				}
+			} else {
+				// Check if it's a sequence (Type 1 can be both clip and sequence)
+				var isSequence = false;
+				if (typeof item.isSequence !== "undefined") {
+					isSequence = item.isSequence();
+				}
+				
+				if (isSequence) {
+					// It's a sequence - only include if user opted in
+					if (includeSequences) {
+						items.push(item);
+					}
+				} else {
+					// It's a media item (clip, file, etc.), check if it matches filter
+					if (shouldIncludeItem(item, filterType)) {
+						items.push(item);
+					}
+				}
+			}
 		} catch (e) {
-			var meta = binItem.children[childInd].getProjectMetadata();
-		}
-		var start =
-			meta.indexOf(
-				"<premierePrivateProjectMetaData:Column.Intrinsic.MediaType>"
-			) + 59;
-		var end = meta.indexOf(
-			"</premierePrivateProjectMetaData:Column.Intrinsic.MediaType>"
-		);
-		var res = meta.slice(start, end);
-		return res;
-	}
-
-	var binInd = {};
-	var binItemIds = [];
-
-	// var newSequence = app.project.createNewSequence("Test Sequence", "123xyz");
-	for (i = 0; i < numItems; i++) {
-		if (binItem.children[i].type == 2) {
-			var childItemNum = binItem.children[i];
-
-			// set the index of each bin with the value of the number of items inside
-			binInd[i] = childItemNum.children.numItems;
-
-			// dump the objects of every item in all the bins into this list
-			for (var j = 0; j < childItemNum.children.numItems; j++) {
-				binItemIds.push(childItemNum.children[j]);
-			}
+			// Skip problematic items
+			continue;
 		}
 	}
+	
+	return items;
+}
 
-	var newSequence = app.project.createNewSequence(
-		"Test Sequence",
-		"binSequence123"
-	);
-
-	// Set binSum to the total number of items across all bins
-	var binAmtArr = Object.values(binInd);
-	var binSum = 0;
-	var numBins = Object.keys(binInd).length;
-	for (var i = 0; i < binAmtArr.length; i++) {
-		binSum += binAmtArr[i];
+/**
+ * Helper: Check if item matches the filter type
+ */
+function shouldIncludeItem(item, filterType) {
+	if (!filterType || filterType === "all") {
+		return true;
 	}
-
-	var binItemAssignments = {};
-
-	var nestedBins = 0;
-	var allVals = [];
-	for (var i = 0; i < numItems + binSum; i++) {
-		// Add the indexes of all items (excluding bin itself, but items in bins are added [would be the numbers at the end])
-		if (Object.keys(binInd).indexOf(i.toString()) == -1) {
-			allVals.push(i);
-		}
-
-		// Once i exceeds the numItems, meaning that it is using the extra numbers designated for the bins,
-		// it assign the extra numbers designted for the bins to its corresponding object
-		// then removes it from the original list (binItemIds)
-		if (i >= numItems) {
-			// if item in binItemIds (a list that contains all the items that are inside a bin) is a bin (nested bin)
-			// --> remove the index from allVals since it wont be used and remove it from binitemIds
-			// else assign the index to the item
-			if (binItemIds[0].type == 2) {
-				allVals.pop();
-				nestedBins++;
-			} else {
-				binItemAssignments[i] = binItemIds[0];
-			}
-			binItemIds.splice(0, 1);
-		}
-	}
-
-	// redefine binSum so that it removes the number of nested bins
-	binSum = binSum - nestedBins;
-
-	var orderKey = [];
-
-	for (var i = 0; i < numItems + binSum - numBins; i++) {
-		var rand = Math.floor(
-			Math.random() * (numItems + binSum - numBins - i)
-		);
-		var y = allVals[rand];
-		orderKey.push(y);
-		allVals.splice(rand, 1);
-	}
-
-	var skip = 0;
-	var realZero = false;
-	var gapTicks = gapSeconds * 254016000000;
-
-	if (checked) {
-		for (i = 0; i < numItems + binSum - numBins; i++) {
-			var target = parseInt(orderKey[i]);
-			if (getType(target) != "Audio" && getType(target) != "Sequence") {
-				if (i == 0 || realZero == true) {
-					if (target < numItems) {
-						newSequence.videoTracks[0].insertClip(
-							binItem.children[target],
-							0
-						);
-					} else {
-						newSequence.videoTracks[0].insertClip(
-							binItemAssignments[target],
-							0
-						);
-					}
-					realZero = false;
-				} else {
-					var numClips = newSequence.videoTracks[0].clips.numItems;
-
-					var ticks = (
-						parseInt(newSequence.end) + gapTicks
-					).toString();
-
-					if (target < numItems) {
-						newSequence.videoTracks[0].insertClip(
-							binItem.children[target],
-							ticks
-						);
-					} else {
-						newSequence.videoTracks[0].insertClip(
-							binItemAssignments[target],
-							ticks
-						);
-					}
-
-					skip = 0;
-				}
-			} else {
-				if (i == 0) {
-					realZero = true;
-				} else {
-					skip++;
-				}
-			}
-		}
-	} else {
-		// Clean up orderKey list
-		var removeList = Object.keys(binItemAssignments);
-		removeList.forEach(function (e) {
-			orderKey.splice(orderKey.indexOf(parseInt(e)), 1);
-		});
-
-		for (i = 0; i < numItems - numBins; i++) {
-			var target = parseInt(orderKey[i]);
-			if (getType(target) != "Audio") {
-				if (i == 0 || realZero == true) {
-					newSequence.videoTracks[0].insertClip(
-						binItem.children[target],
-						0
-					);
-					realZero = false;
-				} else {
-					var numClips = newSequence.videoTracks[0].clips.numItems;
-
-					var ticks = (
-						parseInt(newSequence.end) + gapTicks
-					).toString();
-
-					newSequence.videoTracks[0].insertClip(
-						binItem.children[target],
-						ticks
-					);
-
-					skip = 0;
-				}
-			} else {
-				if (i == 0) {
-					realZero = true;
-				} else {
-					skip++;
-				}
-			}
-		}
+	
+	var mediaType = getMediaType(item);
+	
+	switch (filterType) {
+		case "video":
+			return mediaType === "Video" || mediaType === "Movie";
+		case "audio":
+			return mediaType === "Audio";
+		case "image":
+			return mediaType === "Image" || mediaType === "Still" || mediaType === "Still Image";
+		default:
+			return true;
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Select All Items
-function getObjKey(obj, value) {
-	return Object.keys(obj).find(function (key) {
-		return obj[key] === value;
-	});
+/**
+ * Helper: Shuffle array using Fisher-Yates algorithm
+ */
+function shuffleArray(arr) {
+	var shuffled = [];
+	var remaining = arr.slice(); // Create a copy
+	
+	while (remaining.length > 0) {
+		var rand = Math.floor(Math.random() * remaining.length);
+		shuffled.push(remaining[rand]);
+		remaining.splice(rand, 1);
+	}
+	
+	return shuffled;
 }
 
-function selectAllItems(checked, gapSeconds) {
-	// redefine vars to avoid changing bin
-	rootItems = app.project.rootItem;
-	item = rootItems.children;
-	numItems = rootItems.children.numItems;
-
-	// default value
-	gapSeconds = typeof gapSeconds !== "undefined" ? gapSeconds : 0;
-
-	// Helper Functions
-	function getType(childInd) {
-		try {
-			var meta = binItemAssignments[childInd].getProjectMetadata();
-		} catch (e) {
-			var meta = rootItems.children[childInd].getProjectMetadata();
+/**
+ * Main unified randomization function
+ * @param {Object} config - Configuration object
+ * @param {Object} config.sourceItem - Root item or bin item to randomize from
+ * @param {String} config.mode - "all" or "bin" or "manual"
+ * @param {Number} config.nestingDepth - -1 for unlimited, 0 for current level only, 1+ for depth
+ * @param {Boolean} config.separateAudio - Whether to put audio on separate tracks
+ * @param {Number} config.gapSeconds - Gap between clips in seconds
+ * @param {String} config.filterType - "all", "video", "audio", "image"
+ * @param {String} config.sequenceName - Name for the new sequence
+ * @param {Boolean} config.includeSequences - Whether to include sequences (default: false)
+ * @param {Array} config.manualSelection - Optional array of manually selected items
+ * @param {Number} config.imageDuration - Duration for images in seconds (null to use default)
+ * @returns {Object} Result object with success status and message
+ */
+function randomizeItems(config) {
+	try {
+		// Validate inputs
+		if (!config) {
+			return { success: false, message: "No configuration provided" };
 		}
-		var start =
-			meta.indexOf(
-				"<premierePrivateProjectMetaData:Column.Intrinsic.MediaType>"
-			) + 59;
-		var end = meta.indexOf(
-			"</premierePrivateProjectMetaData:Column.Intrinsic.MediaType>"
-		);
-		var res = meta.slice(start, end);
-		return res;
-	}
-
-	// var projectItems = [];
-	// var newSequence = app.project.createNewSequence("Test Sequence", "123xyz");
-
-	// for (i = 0; i < rootItems.children.numItems; i++) {
-	// 	if (i == 0) {
-	// 		newSequence.videoTracks[0].insertClip(rootItems.children[i], 0);
-	// 	} else {
-	// 		var ticks = newSequence.videoTracks[0].clips[i - 1].end.ticks;
-	// 		// alert(ticks.toString());
-	// 		newSequence.videoTracks[0].insertClip(rootItems.children[i], ticks);
-	// 		// newSequence.videoTracks[0].overwriteClip(rootItems.children[i], 0);
-	// 	}
-	// }
-	var binInd = {};
-	var binItemIds = [];
-	// for (var i = 0; i < numItems; i++) {
-	// 	if (rootItems.children[i].type == 2) {
-	// 		var childItemNum = rootItems.children[i];
-
-	// 		// set the index of each bin with the value of the number of items inside
-	// 		binInd[i] = childItemNum.children.numItems;
-
-	// 		// dump nodeids of every item in all the bins into this list
-	// 		for (var j = 0; j < childItemNum.children.numItems; j++) {
-	// 			binItemIds.push(childItemNum.children[j].nodeId);
-	// 		}
-	// 	}
-	// }
-
-	// var newSequence = app.project.createNewSequence("Test Sequence", "123xyz");
-	for (i = 0; i < numItems; i++) {
-		if (rootItems.children[i].type == 2) {
-			var childItemNum = rootItems.children[i];
-
-			// no nested bin
-			// 30-36 binItemAssignments
-			// upto 34 orderKey
-
-			// 1 nested bin
-			// 30-37 binItemAssignments
-			// upto 35 orderKey
-
-			// check if the items inside the bin is another bin
-			// var nestedBinInd = {};
-
-			// for (j = 0; j < childItemNum.children.numItems; j++) {
-			// 	if (childItemNum.children[j].type == 2) {
-			// 		nestedBinInd[i] = j;
-			// 	}
-			// }
-
-			// set the index of each bin with the value of the number of items inside
-			binInd[i] = childItemNum.children.numItems;
-
-			// dump the objects of every item in all the bins into this list
-			for (var j = 0; j < childItemNum.children.numItems; j++) {
-				// if (childItemNum.children[j].type == 2) {
-				// }
-				binItemIds.push(childItemNum.children[j]);
+		
+		// Set defaults
+		var sourceItem = config.sourceItem || app.project.rootItem;
+		var mode = config.mode || "all";
+		var nestingDepth = typeof config.nestingDepth !== "undefined" ? config.nestingDepth : 0;
+		var separateAudio = config.separateAudio || false;
+		var gapSeconds = config.gapSeconds || 0;
+		var filterType = config.filterType || "all";
+		var sequenceName = config.sequenceName || "Randomized Sequence";
+		var includeSequences = config.includeSequences || false;
+		var manualSelection = config.manualSelection || [];
+		
+		var itemsToRandomize = [];
+		
+		// Collect items based on mode
+		if (mode === "manual" && manualSelection.length > 0) {
+			// Use manually selected items, applying filter
+			for (var i = 0; i < manualSelection.length; i++) {
+				var item = manualSelection[i];
+				var itemType = item.type;
+				// Exclude bins (type 2)
+				if (itemType === 2) {
+					continue;
+				}
+				
+				// Check if it's a sequence
+				var isSequence = false;
+				if (typeof item.isSequence !== "undefined") {
+					isSequence = item.isSequence();
+				}
+				
+				if (isSequence) {
+					if (includeSequences) {
+						itemsToRandomize.push(item);
+					}
+				} else {
+					// Regular media items
+					if (shouldIncludeItem(item, filterType)) {
+						itemsToRandomize.push(item);
+					}
+				}
 			}
-		}
-	}
-
-	var newSequence = app.project.createNewSequence("Test Sequence", "123xyz");
-
-	// Set binSum to the total number of items across all bins
-	var binAmtArr = Object.values(binInd);
-	var binSum = 0;
-	var numBins = Object.keys(binInd).length;
-	for (var i = 0; i < binAmtArr.length; i++) {
-		binSum += binAmtArr[i];
-	}
-
-	var binItemAssignments = {};
-
-	var nestedBins = 0;
-	var allVals = [];
-	for (var i = 0; i < numItems + binSum; i++) {
-		// Add the indexes of all items (excluding bin itself, but items in bins are added [would be the numbers at the end])
-		if (Object.keys(binInd).indexOf(i.toString()) == -1) {
-			allVals.push(i);
 		} else {
-			// binItemAssignments[] = i;
+			// Collect from source item with depth control
+			itemsToRandomize = collectItemsRecursive(sourceItem, 0, nestingDepth, filterType, includeSequences);
 		}
+		
+		// Validate we have items
+		if (itemsToRandomize.length === 0) {
+			return { 
+				success: false, 
+				message: "No items found to randomize. Check your selection and filters." 
+			};
+		}
+		
+		// Randomize the order
+		var randomizedItems = shuffleArray(itemsToRandomize);
+		
+		// Create new sequence
+		var newSequence;
+		try {
+			newSequence = app.project.createNewSequence(sequenceName, "randomized_" + Date.now());
+		} catch (e) {
+			return { 
+				success: false, 
+				message: "Failed to create sequence: " + e.toString() 
+			};
+		}
+		
+		// Calculate gap in ticks (Premiere Pro uses ticks for time)
+		var gapTicks = gapSeconds * 254016000000;
+		
+		// Get image duration (null means use default)
+		var imageDuration = config.imageDuration || null;
+		
+		// Insert clips into sequence
+		if (separateAudio) {
+			insertClipsSeparateAudioVideo(newSequence, randomizedItems, gapTicks, imageDuration);
+		} else {
+			insertClipsUnified(newSequence, randomizedItems, gapTicks, imageDuration);
+		}
+		
+		return { 
+			success: true, 
+			message: "Successfully created sequence '" + sequenceName + "' with " + randomizedItems.length + " randomized items.",
+			itemCount: randomizedItems.length
+		};
+		
+	} catch (e) {
+		return { 
+			success: false, 
+			message: "Error during randomization: " + e.toString() 
+		};
+	}
+}
 
-		// Once i exceeds the numItems, meaning that it is using the extra numbers designated for the bins,
-		// it assign the extra numbers designted for the bins to its corresponding object
-		// then removes it from the original list (binItemIds)
-		if (i >= numItems) {
-			// if item in binItemIds (a list that contains all the items that are inside a bin) is a bin (nested bin)
-			// --> remove the index from allVals since it wont be used and remove it from binitemIds
-			// else assign the index to the item
-			if (binItemIds[0].type == 2) {
-				allVals.pop();
-				nestedBins++;
-			} else {
-				binItemAssignments[i] = binItemIds[0];
+/**
+ * Helper: Insert clips with separate audio and video tracks
+ * Strategy:
+ * 1. Place all video/image clips first to establish the visual timeline and A1 usage.
+ * 2. Place audio clips second, filling A1 gaps where possible, otherwise spilling to A2.
+ */
+function insertClipsSeparateAudioVideo(sequence, items, gapTicks, imageDuration) {
+	var audioCursor = "0";
+	var videoCursor = "0";
+	
+	// Ensure we have enough audio tracks (A1, A2, and A3 for temp measurements)
+	while (sequence.audioTracks.numTracks < 3) {
+		sequence.audioTracks.add();
+	}
+	
+	var primaryAudioTrack = sequence.audioTracks[0];   // A1
+	var secondaryAudioTrack = sequence.audioTracks[1]; // A2
+	var tempAudioTrack = sequence.audioTracks[sequence.audioTracks.numTracks - 1]; // Last track
+	
+	var audioItems = [];
+	var a1OccupiedRanges = [];
+	
+	// PASS 1: Place Visuals (Video/Movie/Image)
+	for (var i = 0; i < items.length; i++) {
+		var item = items[i];
+		var mediaType = getMediaType(item);
+		
+		if (mediaType === "Audio") {
+			// Queue for Pass 2
+			audioItems.push(item);
+		} else if (mediaType === "Image" || mediaType === "Still") {
+			// Image -> Video Track Only
+			sequence.videoTracks[0].insertClip(item, videoCursor);
+			var insertedClip = sequence.videoTracks[0].clips[sequence.videoTracks[0].clips.numItems - 1];
+			
+			// Set custom duration if specified
+			if (imageDuration !== null && imageDuration > 0) {
+				var startTicks = parseInt(insertedClip.start.ticks);
+				var durationTicks = imageDuration * 254016000000;
+				insertedClip.end = (startTicks + durationTicks).toString();
 			}
-			binItemIds.splice(0, 1);
+			
+			videoCursor = (parseInt(insertedClip.end.ticks) + gapTicks).toString();
+			// Does not occupy A1
+		} else if (mediaType === "Movie") {
+			// Movie -> Video Track + Audio Track 1 (has linked audio)
+			sequence.videoTracks[0].insertClip(item, videoCursor);
+			var insertedClip = sequence.videoTracks[0].clips[sequence.videoTracks[0].clips.numItems - 1];
+			
+			// Record A1 occupation for movies with audio
+			var startTicks = parseInt(insertedClip.start.ticks);
+			var endTicks = parseInt(insertedClip.end.ticks);
+			a1OccupiedRanges.push({start: startTicks, end: endTicks});
+			
+			videoCursor = (endTicks + gapTicks).toString();
+		} else {
+			// Video (without audio) -> Video Track Only
+			sequence.videoTracks[0].insertClip(item, videoCursor);
+			var insertedClip = sequence.videoTracks[0].clips[sequence.videoTracks[0].clips.numItems - 1];
+			
+			videoCursor = (parseInt(insertedClip.end.ticks) + gapTicks).toString();
+			// Does not occupy A1 since it's video without audio
 		}
 	}
+	
+	// PASS 2: Place Audio Clips
+	// Strict Separation Rule: 
+	// If A1 is occupied by ANY movie audio, force ALL dedicated audio to A2.
+	// This prevents "checkerboarding" (some on A1, some on A2) and ensures clean track organization.
+	var targetAudioTrack = a1OccupiedRanges.length > 0 ? secondaryAudioTrack : primaryAudioTrack;
 
-	// redefine binSum so that it removes the number of nested bins
-	binSum = binSum - nestedBins;
-
-	var orderKey = [];
-
-	for (var i = 0; i < numItems + binSum - numBins; i++) {
-		var rand = Math.floor(
-			Math.random() * (numItems + binSum - numBins - i)
-		);
-		var y = allVals[rand];
-		orderKey.push(y);
-		allVals.splice(rand, 1);
+	for (var i = 0; i < audioItems.length; i++) {
+		var item = audioItems[i];
+		
+		// 1. Measure Duration using Temp Track
+		// Insert at 0 on temp track (which is empty or we don't care)
+		tempAudioTrack.insertClip(item, "0");
+		var tempClip = tempAudioTrack.clips[tempAudioTrack.clips.numItems - 1];
+		
+		if (!tempClip) continue; // Safety check
+		
+		var durationTicks = parseInt(tempClip.end.ticks) - parseInt(tempClip.start.ticks);
+		tempClip.remove(false, false); // Remove from temp
+		
+		// 2. Insert to target track
+		targetAudioTrack.insertClip(item, audioCursor);
+		
+		// Advance cursor
+		// Note: We use durationTicks instead of reading the inserted clip to avoid 
+		// potential API latency issues, as we already measured it.
+		audioCursor = (parseInt(audioCursor) + durationTicks + gapTicks).toString();
 	}
+}
 
-	// TODO
-	// The for loop just above TODO needs to be modified to add rng on the extra indexes
-	// i < numItems + extra
-	// Math.random() part
-	//
-	//
-	// binAssignment has each projectitem's nodeid corresponding to their imaginary indexes ie 32 33
-	// if target == undefined/null --> search in binAssignment and fetch item
-	var skip = 0;
-	var realZero = false;
-	var gapTicks = gapSeconds * 254016000000;
+/**
+ * Helper: Insert clips with unified cursor (audio and video together)
+ */
+function insertClipsUnified(sequence, items, gapTicks, imageDuration) {
+	var cursor = "0";
+	
+	for (var i = 0; i < items.length; i++) {
+		var item = items[i];
+		var mediaType = getMediaType(item);
+		
+		if (mediaType === "Audio") {
+			sequence.audioTracks[0].insertClip(item, cursor);
+			var insertedClip = sequence.audioTracks[0].clips[sequence.audioTracks[0].clips.numItems - 1];
+			cursor = (parseInt(insertedClip.end.ticks) + gapTicks).toString();
+		} else if (mediaType === "Image" || mediaType === "Still") {
+			sequence.videoTracks[0].insertClip(item, cursor);
+			var insertedClip = sequence.videoTracks[0].clips[sequence.videoTracks[0].clips.numItems - 1];
+			
+			// Set custom duration if specified
+			if (imageDuration !== null && imageDuration > 0) {
+				var startTicks = parseInt(insertedClip.start.ticks);
+				var durationTicks = imageDuration * 254016000000;
+				insertedClip.end = (startTicks + durationTicks).toString();
+			}
+			
+			cursor = (parseInt(insertedClip.end.ticks) + gapTicks).toString();
+		} else {
+			// Video or Movie (with or without audio)
+			// insertClip automatically handles both video and audio components if they exist
+			sequence.videoTracks[0].insertClip(item, cursor);
+			
+			// Calculate cursor from video clip
+			var insertedClip = sequence.videoTracks[0].clips[sequence.videoTracks[0].clips.numItems - 1];
+			cursor = (parseInt(insertedClip.end.ticks) + gapTicks).toString();
+		}
+	}
+}
 
-	if (checked) {
-		for (i = 0; i < numItems + binSum - numBins; i++) {
-			var target = parseInt(orderKey[i]);
-			if (getType(target) != "Audio" && getType(target) != "Sequence") {
-				if (i == 0 || realZero == true) {
-					if (target < numItems) {
-						newSequence.videoTracks[0].insertClip(
-							rootItems.children[target],
-							0
-						);
-					} else {
-						newSequence.videoTracks[0].insertClip(
-							binItemAssignments[target],
-							0
-						);
-					}
-					realZero = false;
-				} else {
-					var numClips = newSequence.videoTracks[0].clips.numItems;
+// ============================================================================
+// PUBLIC API FUNCTIONS (called from JavaScript side)
+// ============================================================================
 
-					// var ticks_1 = newSequence.videoTracks[0].clips[numClips - 1];
-					// var ticks = newSequence.videoTracks[0].clips[numClips - 1].end.ticks;
-					var ticks = (
-						parseInt(newSequence.end) + gapTicks
-					).toString();
+/**
+ * Helper: Safely get child count from a bin/item
+ */
+function getChildCount(item) {
+	try {
+		if (item && item.children && typeof item.children.numItems !== "undefined") {
+			return item.children.numItems;
+		}
+		return 0;
+	} catch (e) {
+		return 0;
+	}
+}
 
-					// 0 to 29: numItems
-					// 30 to 36: items in bin
-					if (target < numItems) {
-						newSequence.videoTracks[0].insertClip(
-							rootItems.children[target],
-							ticks
-						);
-					} else {
-						newSequence.videoTracks[0].insertClip(
-							binItemAssignments[target],
-							ticks
-						);
-					}
-
-					skip = 0;
-				}
+/**
+ * Get current selection info
+ */
+function getSelectionInfo() {
+	try {
+		var selection = app.getCurrentProjectViewSelection();
+		
+		// Determine selection mode
+		var mode = "manual";
+		var binName = "";
+		var itemCount = 0;
+		var isImplicit = false;
+		
+		if (selection && selection.length === 1 && selection[0].type === 2) {
+			// Single bin selected explicitly
+			mode = "bin";
+			binName = selection[0].name;
+			itemCount = getChildCount(selection[0]);
+		} else if (selection && selection.length > 0) {
+			// Multiple items or non-bin items selected
+			mode = "manual";
+			itemCount = selection.length;
+		} else {
+			// No selection, check for active bin (insertion bin)
+			var activeBin = app.project.getInsertionBin();
+			if (activeBin && activeBin.type === 2) {
+				mode = "bin";
+				binName = activeBin.name;
+				itemCount = getChildCount(activeBin);
+				isImplicit = true;
 			} else {
-				if (i == 0) {
-					realZero = true;
-				} else {
-					skip++;
-				}
+				mode = "none";
 			}
 		}
-	} else {
-		// Clean up orderKey list
-		var removeList = Object.keys(binItemAssignments);
-		removeList.forEach(function (e) {
-			orderKey.splice(orderKey.indexOf(parseInt(e)), 1);
+		
+		var message = "";
+		if (mode === "bin") {
+			message = (isImplicit ? "Active Bin: " : "Selected Bin: ") + binName + " (" + itemCount + " items)";
+		} else if (mode === "manual") {
+			message = itemCount + " item(s) selected";
+		} else {
+			message = "No items selected";
+		}
+		
+		return JSON.stringify({
+			mode: mode,
+			count: itemCount,
+			binName: binName,
+			isImplicit: isImplicit,
+			message: message
 		});
+	} catch (e) {
+		return JSON.stringify({ 
+			mode: "error", 
+			count: 0,
+			message: "Error: " + e.toString()
+		});
+	}
+}
 
-		for (i = 0; i < numItems - numBins; i++) {
-			var target = parseInt(orderKey[i]);
-			if (getType(target) != "Audio") {
-				if (i == 0 || realZero == true) {
-					newSequence.videoTracks[0].insertClip(
-						rootItems.children[target],
-						0
-					);
-					realZero = false;
-				} else {
-					var numClips = newSequence.videoTracks[0].clips.numItems;
-
-					// var ticks_1 = newSequence.videoTracks[0].clips[numClips - 1];
-					// var ticks = newSequence.videoTracks[0].clips[numClips - 1].end.ticks;
-					var ticks = (
-						parseInt(newSequence.end) + gapTicks
-					).toString();
-
-					// 0 to 29: numItems
-					// 30 to 36: items in bin
-
-					newSequence.videoTracks[0].insertClip(
-						rootItems.children[target],
-						ticks
-					);
-
-					skip = 0;
-				}
+/**
+ * Count total items that will be randomized (for preview)
+ */
+function countItemsForRandomization(mode, nestingDepth, filterType, includeSequences) {
+	try {
+		var sourceItem;
+		var manualSelection = [];
+		
+		if (mode === "manual") {
+			manualSelection = app.getCurrentProjectViewSelection();
+			if (manualSelection.length === 0) {
+				return JSON.stringify({ count: 0, message: "No items selected" });
+			}
+		} else if (mode === "bin") {
+			var selection = app.getCurrentProjectViewSelection();
+			if (selection && selection.length > 0 && selection[0].type === 2) {
+				sourceItem = selection[0];
 			} else {
-				if (i == 0) {
-					realZero = true;
+				// Try active bin
+				var activeBin = app.project.getInsertionBin();
+				if (activeBin && activeBin.type === 2) {
+					sourceItem = activeBin;
 				} else {
-					skip++;
+					return JSON.stringify({ count: 0, message: "No bin selected" });
 				}
 			}
+		} else {
+			sourceItem = app.project.rootItem;
 		}
+		
+		var items = [];
+		if (mode === "manual") {
+			for (var i = 0; i < manualSelection.length; i++) {
+				var item = manualSelection[i];
+				var itemType = item.type;
+				// Skip bins (type 2)
+				if (itemType === 2) {
+					continue;
+				}
+				
+				// Check if it's a sequence
+				var isSequence = false;
+				if (typeof item.isSequence !== "undefined") {
+					isSequence = item.isSequence();
+				}
+				
+				if (isSequence) {
+					if (includeSequences) {
+						items.push(item);
+					}
+				} else {
+					// Regular media items
+					if (shouldIncludeItem(item, filterType)) {
+						items.push(item);
+					}
+				}
+			}
+		} else {
+			items = collectItemsRecursive(sourceItem, 0, nestingDepth, filterType, includeSequences);
+		}
+		
+		return JSON.stringify({ 
+			count: items.length,
+			message: items.length + " item(s) will be randomized"
+		});
+	} catch (e) {
+		return JSON.stringify({ 
+			count: 0,
+			message: "Error: " + e.toString()
+		});
 	}
+}
 
-	// var skip = 0;
-	// var realZero = false;
-	// for (i = 0; i < numItems; i++) {
-	// 	var target = parseInt(getObjKey(orderKey, i));
-	// 	if (getType(target) != "Audio") {
-	// 		if (i == 0 || realZero == true) {
-	// 			newSequence.videoTracks[0].insertClip(
-	// 				rootItems.children[target],
-	// 				0
-	// 			);
-	// 			realZero = false;
-	// 		} else {
-	// 			var numClips = newSequence.videoTracks[0].clips.numItems;
+/**
+ * Helper: Check if a sequence name exists in the project
+ */
+function findUniqueSequenceName(baseName) {
+	try {
+		var sequences = app.project.sequences;
+		var existingNames = {};
+		
+		// Build a map of existing sequence names
+		for (var i = 0; i < sequences.numSequences; i++) {
+			existingNames[sequences[i].name] = true;
+		}
+		
+		// If base name doesn't exist, use it
+		if (!existingNames[baseName]) {
+			return baseName;
+		}
+		
+		// Otherwise, find the next available number
+		var counter = 1;
+		while (existingNames[baseName + " " + counter]) {
+			counter++;
+		}
+		
+		return baseName + " " + counter;
+	} catch (e) {
+		// If there's an error, just return the base name
+		return baseName;
+	}
+}
 
-	// 			var ticks =
-	// 				newSequence.videoTracks[0].clips[numClips - 1].end.ticks;
-	// 			newSequence.videoTracks[0].insertClip(
-	// 				rootItems.children[target],
-	// 				ticks
-	// 			);
-	// 			skip = 0;
-	// 		}
-	// 	} else {
-	// 		if (i == 0) {
-	// 			realZero = true;
-	// 		} else {
-	// 			skip++;
-	// 		}
-	// 	}
-	// }
-
-	// for (i = 0; i < rootItems.children.numItems; i++) {
-	// 	if (i == 0) {
-	// 		newSequence.videoTracks[0].insertClip(rootItems.children[i], 0);
-	// 	} else {
-	// 		var ticks = newSequence.videoTracks[0].clips[i - 1].end.ticks;
-	// 		// alert(ticks.toString());
-	// 		newSequence.videoTracks[0].insertClip(rootItems.children[i], ticks);
-	// 		// newSequence.videoTracks[0].overwriteClip(rootItems.children[i], 0);
-	// 	}
-	// }
-	// newSequence.videoTracks[0].insertClip(rootItems.children[0], 0);
-
-	// for (i = 0; i < rootItems.children.numItems; i++) {
-	// 	// app.project.rootItem.children[i].select();
-	// 	projectItems.push(rootItems.children[i]);
-	// }
-	// var newSequence = app.project.createNewSequenceFromClips(
-	// 	"New Sequence",
-	// 	projectItems
-	// );
+/**
+ * Execute randomization (main entry point from UI)
+ */
+function executeRandomization(configJSON) {
+	try {
+		var config = JSON.parse(configJSON);
+		
+		// Get source item based on mode
+		if (config.mode === "bin" || config.mode === "manual") {
+			var selection = app.getCurrentProjectViewSelection();
+			
+			if (config.mode === "bin") {
+				// Check for explicit selection first
+				if (selection && selection.length > 0 && selection[0].type === 2) {
+					config.sourceItem = selection[0];
+				} else {
+					// Fallback to active bin
+					var activeBin = app.project.getInsertionBin();
+					if (activeBin && activeBin.type === 2) {
+						config.sourceItem = activeBin;
+					} else {
+						return JSON.stringify({ 
+							success: false, 
+							message: "No bin selected or active" 
+						});
+					}
+				}
+			} else {
+				// Manual mode requires explicit selection
+				if (selection.length === 0) {
+					return JSON.stringify({ 
+						success: false, 
+						message: "No items selected in Project Panel" 
+					});
+				}
+				config.manualSelection = selection;
+			}
+		} else {
+			config.sourceItem = app.project.rootItem;
+		}
+		
+		// Find a unique sequence name
+		config.sequenceName = findUniqueSequenceName(config.sequenceName);
+		
+		var result = randomizeItems(config);
+		return JSON.stringify(result);
+		
+	} catch (e) {
+		return JSON.stringify({ 
+			success: false, 
+			message: "Execution error: " + e.toString() 
+		});
+	}
 }
