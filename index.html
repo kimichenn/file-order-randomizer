@@ -10,6 +10,11 @@
             <!-- Header -->
             <div class="header">
                 <h2>File Order Randomizer</h2>
+                <button id="info-menu-btn" class="info-menu-btn" title="Info & Support">
+                    <svg class="info-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                </button>
             </div>
 
             <div class="content-grid">
@@ -291,6 +296,39 @@
 
         <!-- Toast Notification -->
         <div id="toast-container" class="toast-container"></div>
+
+        <!-- Info Modal -->
+        <div id="info-modal" class="modal hidden">
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>About & Support</h3>
+                    <button id="modal-close-btn" class="modal-close-btn">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-section">
+                        <div class="modal-label">Version</div>
+                        <div class="modal-value" id="extension-version">Loading...</div>
+                    </div>
+                    <div class="modal-divider"></div>
+                    <div class="modal-section">
+                        <div class="modal-label">Need Help?</div>
+                        <div class="modal-description">Visit the support page for troubleshooting guides, FAQs, and installation help.</div>
+                        <button class="modal-link-btn" data-url="https://www.kimichen.net/projects/file-order-randomizer/#support-faq">
+                            📖 Support & FAQ
+                        </button>
+                    </div>
+                    <div class="modal-divider"></div>
+                    <div class="modal-section">
+                        <div class="modal-label">Enjoying this extension?</div>
+                        <div class="modal-description">Help support future development!</div>
+                        <button class="modal-link-btn coffee-btn" data-url="https://www.buymeacoffee.com/kimichen">
+                            ☕ Buy me a coffee
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <script type="text/javascript" src="./js/libs/CSInterface.js"></script>
         <script type="text/javascript" src="./js/index.js"></script>

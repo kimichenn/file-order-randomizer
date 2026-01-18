@@ -55,6 +55,7 @@ body {
 
 /* Header */
 .header {
+	position: relative;
 	text-align: center;
 	margin-bottom: 0;
 	padding: 1.5rem;
@@ -66,13 +67,69 @@ body {
 
 h2 {
 	margin: 0;
-	padding: 0;
+	padding: 0 3rem;
 	font-size: 1.8rem;
 	color: #4fb6ff;
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 2px;
 	text-shadow: 0 0 20px rgba(79, 182, 255, 0.5);
+}
+
+@media (max-width: 480px) {
+	h2 {
+		font-size: 1.3rem;
+		letter-spacing: 1px;
+		padding: 0 2.5rem;
+	}
+	
+	.header {
+		padding: 1rem;
+	}
+}
+
+/* Info Menu Button */
+.info-menu-btn {
+	position: absolute;
+	top: 50%;
+	right: 1.5rem;
+	transform: translateY(-50%);
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	padding: 0;
+	opacity: 0.7;
+}
+
+.info-menu-btn:hover {
+	opacity: 1;
+	transform: translateY(-50%) scale(1.15);
+	filter: drop-shadow(0 0 8px rgba(79, 182, 255, 0.6));
+}
+
+.info-icon {
+	width: 24px;
+	height: 24px;
+	color: #4fb6ff;
+}
+
+@media (max-width: 480px) {
+	.info-menu-btn {
+		right: 1rem;
+		width: 24px;
+		height: 24px;
+	}
+	
+	.info-icon {
+		width: 20px;
+		height: 20px;
+	}
 }
 
 h3 {
@@ -847,4 +904,168 @@ input[type="number"]::-webkit-outer-spin-button {
 .radio-label .tooltip-wrapper,
 .checkbox-label .tooltip-wrapper {
 	margin-left: 0.25rem;
+}
+
+/* Modal Styles */
+.modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 10000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	animation: modalFadeIn 0.2s ease-out;
+}
+
+.modal.hidden {
+	display: none;
+}
+
+.modal-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.7);
+	backdrop-filter: blur(4px);
+}
+
+.modal-content {
+	position: relative;
+	background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+	border: 2px solid #4fb6ff;
+	border-radius: 0.5rem;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 40px rgba(79, 182, 255, 0.3);
+	max-width: 400px;
+	width: calc(100% - 2rem);
+	max-height: 80vh;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+.modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1.25rem;
+	border-bottom: 1px solid #3a3a3a;
+}
+
+.modal-header h3 {
+	margin: 0;
+	padding: 0;
+	border: none;
+	font-size: 1.2rem;
+}
+
+.modal-close-btn {
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	border: 1px solid #3a3a3a;
+	border-radius: 0.25rem;
+	color: #a1a1a1;
+	font-size: 1.2rem;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	padding: 0;
+}
+
+.modal-close-btn:hover {
+	background: #3a3a3a;
+	border-color: #4fb6ff;
+	color: #4fb6ff;
+}
+
+.modal-body {
+	padding: 1.25rem;
+	overflow-y: auto;
+}
+
+.modal-section {
+	margin-bottom: 1rem;
+}
+
+.modal-section:last-child {
+	margin-bottom: 0;
+}
+
+.modal-label {
+	font-size: 0.8rem;
+	color: #4fb6ff;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 0.4rem;
+}
+
+.modal-value {
+	font-size: 1rem;
+	color: #d4d4d4;
+	font-family: 'Courier New', monospace;
+}
+
+.modal-description {
+	font-size: 0.85rem;
+	color: #a1a1a1;
+	line-height: 1.5;
+	margin-bottom: 0.75rem;
+}
+
+.modal-divider {
+	height: 1px;
+	background: #3a3a3a;
+	margin: 1rem 0;
+}
+
+.modal-link-btn {
+	width: 100%;
+	padding: 0.75rem 1rem;
+	background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+	border: 1px solid #4fb6ff;
+	border-radius: 0.4rem;
+	color: #4fb6ff;
+	font-size: 0.9rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+.modal-link-btn:hover {
+	background: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
+	box-shadow: 0 4px 12px rgba(79, 182, 255, 0.3);
+	transform: translateY(-1px);
+}
+
+.modal-link-btn.coffee-btn {
+	border-color: #ffca28;
+	color: #ffca28;
+	background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+}
+
+.modal-link-btn.coffee-btn:hover {
+	background: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
+	box-shadow: 0 4px 12px rgba(255, 202, 40, 0.3);
+}
+
+@keyframes modalFadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
