@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="6.0" ExtensionBundleId="file.order.randomizer" ExtensionBundleVersion="3.0.1" ExtensionBundleName="FileOrderRandomizer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ExtensionManifest Version="6.0" ExtensionBundleId="file.order.randomizer" ExtensionBundleVersion="3.1.0" ExtensionBundleName="FileOrderRandomizer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<ExtensionList>
-		<Extension Id="file.order.randomizer" Version="3.0.1"  />
+		<Extension Id="file.order.randomizer" Version="3.1.0"  />
 	</ExtensionList>
 	<ExecutionEnvironment>
 		<HostList>

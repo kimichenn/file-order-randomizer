@@ -120,6 +120,57 @@ function shuffleArray(arr) {
 }
 
 /**
+ * Helper: Normalize and validate image duration configuration.
+ * A fixed duration is represented as a range with matching bounds.
+ */
+function getImageDurationRange(config) {
+	if (config.randomizeImageDuration) {
+		var minDuration = parseFloat(config.imageDurationMin);
+		var maxDuration = parseFloat(config.imageDurationMax);
+
+		if (isNaN(minDuration) || isNaN(maxDuration) ||
+			!isFinite(minDuration) || !isFinite(maxDuration)) {
+			return { error: "Both minimum and maximum image durations are required." };
+		}
+		if (minDuration <= 0 || maxDuration <= 0) {
+			return { error: "Image durations must be greater than zero." };
+		}
+		if (minDuration > maxDuration) {
+			return { error: "Minimum image duration cannot exceed the maximum." };
+		}
+
+		return { min: minDuration, max: maxDuration };
+	}
+
+	if (typeof config.imageDuration !== "undefined" &&
+		config.imageDuration !== null && config.imageDuration !== "") {
+		var fixedDuration = parseFloat(config.imageDuration);
+		if (isNaN(fixedDuration) || !isFinite(fixedDuration) || fixedDuration <= 0) {
+			return { error: "Image duration must be greater than zero." };
+		}
+		return { min: fixedDuration, max: fixedDuration };
+	}
+
+	return null;
+}
+
+/**
+ * Helper: Pick an image duration and convert it to Premiere Pro ticks.
+ */
+function getRandomImageDurationTicks(durationRange) {
+	if (!durationRange) {
+		return null;
+	}
+
+	var durationSeconds = durationRange.min;
+	if (durationRange.max > durationRange.min) {
+		durationSeconds += Math.random() * (durationRange.max - durationRange.min);
+	}
+
+	return Math.round(durationSeconds * 254016000000);
+}
+
+/**
  * Main unified randomization function
  * @param {Object} config - Configuration object
  * @param {Object} config.sourceItem - Root item or bin item to randomize from
@@ -131,7 +182,10 @@ function shuffleArray(arr) {
  * @param {String} config.sequenceName - Name for the new sequence
  * @param {Boolean} config.includeSequences - Whether to include sequences (default: false)
  * @param {Array} config.manualSelection - Optional array of manually selected items
- * @param {Number} config.imageDuration - Duration for images in seconds (null to use default)
+ * @param {Number} config.imageDuration - Fixed duration for images in seconds (null to use default)
+ * @param {Boolean} config.randomizeImageDuration - Whether to randomize each image's duration
+ * @param {Number} config.imageDurationMin - Minimum randomized image duration in seconds
+ * @param {Number} config.imageDurationMax - Maximum randomized image duration in seconds
  * @returns {Object} Result object with success status and message
  */
 function randomizeItems(config) {
@@ -151,6 +205,11 @@ function randomizeItems(config) {
 		var sequenceName = config.sequenceName || "Randomized Sequence";
 		var includeSequences = config.includeSequences || false;
 		var manualSelection = config.manualSelection || [];
+		var imageDurationRange = getImageDurationRange(config);
+
+		if (imageDurationRange && imageDurationRange.error) {
+			return { success: false, message: imageDurationRange.error };
+		}
 		
 		var itemsToRandomize = [];
 		
@@ -212,14 +271,11 @@ function randomizeItems(config) {
 		// Calculate gap in ticks (Premiere Pro uses ticks for time)
 		var gapTicks = gapSeconds * 254016000000;
 		
-		// Get image duration (null means use default)
-		var imageDuration = config.imageDuration || null;
-		
 		// Insert clips into sequence
 		if (separateAudio) {
-			insertClipsSeparateAudioVideo(newSequence, randomizedItems, gapTicks, imageDuration);
+			insertClipsSeparateAudioVideo(newSequence, randomizedItems, gapTicks, imageDurationRange);
 		} else {
-			insertClipsUnified(newSequence, randomizedItems, gapTicks, imageDuration);
+			insertClipsUnified(newSequence, randomizedItems, gapTicks, imageDurationRange);
 		}
 		
 		return { 
@@ -242,7 +298,7 @@ function randomizeItems(config) {
  * 1. Place all video/image clips first to establish the visual timeline and A1 usage.
  * 2. Place audio clips second, filling A1 gaps where possible, otherwise spilling to A2.
  */
-function insertClipsSeparateAudioVideo(sequence, items, gapTicks, imageDuration) {
+function insertClipsSeparateAudioVideo(sequence, items, gapTicks, imageDurationRange) {
 	var audioCursor = "0";
 	var videoCursor = "0";
 	
@@ -271,11 +327,11 @@ function insertClipsSeparateAudioVideo(sequence, items, gapTicks, imageDuration)
 			sequence.videoTracks[0].insertClip(item, videoCursor);
 			var insertedClip = sequence.videoTracks[0].clips[sequence.videoTracks[0].clips.numItems - 1];
 			
-			// Set custom duration if specified
-			if (imageDuration !== null && imageDuration > 0) {
+			// Set a fixed or freshly randomized duration if specified
+			var imageDurationTicks = getRandomImageDurationTicks(imageDurationRange);
+			if (imageDurationTicks !== null) {
 				var startTicks = parseInt(insertedClip.start.ticks);
-				var durationTicks = imageDuration * 254016000000;
-				insertedClip.end = (startTicks + durationTicks).toString();
+				insertedClip.end = (startTicks + imageDurationTicks).toString();
 			}
 			
 			videoCursor = (parseInt(insertedClip.end.ticks) + gapTicks).toString();
@@ -333,7 +389,7 @@ function insertClipsSeparateAudioVideo(sequence, items, gapTicks, imageDuration)
 /**
  * Helper: Insert clips with unified cursor (audio and video together)
  */
-function insertClipsUnified(sequence, items, gapTicks, imageDuration) {
+function insertClipsUnified(sequence, items, gapTicks, imageDurationRange) {
 	var cursor = "0";
 	
 	for (var i = 0; i < items.length; i++) {
@@ -348,11 +404,11 @@ function insertClipsUnified(sequence, items, gapTicks, imageDuration) {
 			sequence.videoTracks[0].insertClip(item, cursor);
 			var insertedClip = sequence.videoTracks[0].clips[sequence.videoTracks[0].clips.numItems - 1];
 			
-			// Set custom duration if specified
-			if (imageDuration !== null && imageDuration > 0) {
+			// Set a fixed or freshly randomized duration if specified
+			var imageDurationTicks = getRandomImageDurationTicks(imageDurationRange);
+			if (imageDurationTicks !== null) {
 				var startTicks = parseInt(insertedClip.start.ticks);
-				var durationTicks = imageDuration * 254016000000;
-				insertedClip.end = (startTicks + durationTicks).toString();
+				insertedClip.end = (startTicks + imageDurationTicks).toString();
 			}
 			
 			cursor = (parseInt(insertedClip.end.ticks) + gapTicks).toString();

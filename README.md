@@ -21,6 +21,7 @@
 
 - **Flexible Randomization**: Randomize all project items, a specific bin, or a manual selection of clips.
 - **Smart Filtering**: Filter by file type (Video, Audio, Images) to randomize exactly what you need.
+- **Flexible Image Timing**: Keep a fixed still-image duration or randomize each image between a custom minimum and maximum while preserving video durations.
 - **Depth Control**: Choose how deep to search in nested bins (Current level, 1-3 levels, or Unlimited).
 - **Native Integration**: Works seamlessly inside Premiere Pro 2026 (and earlier), building sequences directly on your active timeline.
 - **Cross-Platform**: Fully compatible with both macOS and Windows.
@@ -51,7 +52,7 @@ If you prefer to install manually or are having trouble with the Creative Cloud 
 1. Open your project in Premiere Pro.
 2. Go to **Window** → **Extensions** → **File Order Randomizer**.
 3. Choose your **Selection Mode** (All Project Items, Selected Bin, or Manual Selection).
-4. Customize your **Randomization Options** (File Type Filter, Nesting Depth).
+4. Customize your **Randomization Options** (File Type Filter, Nesting Depth, and optional fixed or randomized image duration).
 5. Click **Create Randomized Sequence**.
 
 > **Note:** If "Extensions" is greyed out, make sure you have a project open first.

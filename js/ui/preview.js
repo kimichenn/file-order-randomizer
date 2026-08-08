@@ -73,6 +73,14 @@ function validateAndUpdateButton() {
 		errorBox.className = "error-box";
 		return;
 	}
+
+	var imageDurationError = getImageDurationValidationError();
+	if (imageDurationError) {
+		createButton.disabled = true;
+		errorBox.textContent = imageDurationError;
+		errorBox.className = "error-box";
+		return;
+	}
 	
 	// All validations passed
 	createButton.disabled = false;

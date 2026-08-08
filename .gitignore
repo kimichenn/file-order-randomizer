@@ -65,6 +65,7 @@ certificate/
 
 # Test Files
 *.test.js
+!tests/**/*.test.js
 coverage/
 
 # Documentation Build (if using doc generators)
