@@ -9,6 +9,13 @@ function handleCreateSequence() {
 	if (!sequenceName) {
 		sequenceName = "Randomized Sequence";
 	}
+
+	var imageDurationError = getImageDurationValidationError();
+	if (imageDurationError) {
+		showError(imageDurationError);
+		return;
+	}
+	var imageDurationSettings = getImageDurationSettings();
 	
 	// Gather configuration
 	var config = {
@@ -19,7 +26,10 @@ function handleCreateSequence() {
 		filterType: document.getElementById("filter-type").value,
 		sequenceName: sequenceName,
 		includeSequences: document.getElementById("include-sequences").checked,
-		imageDuration: parseFloat(document.getElementById("image-duration").value) || null
+		imageDuration: imageDurationSettings.imageDuration,
+		randomizeImageDuration: imageDurationSettings.randomize,
+		imageDurationMin: imageDurationSettings.imageDurationMin,
+		imageDurationMax: imageDurationSettings.imageDurationMax
 	};
 	
 	// Disable button and show processing state

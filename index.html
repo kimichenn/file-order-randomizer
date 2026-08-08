@@ -228,28 +228,75 @@
                     <!-- Image Duration -->
                     <div class="option-group" id="image-duration-group">
                         <label for="image-duration">
-                            Image Duration (seconds):
+                            Image Duration:
                             <span class="tooltip-wrapper">
                                 <span class="tooltip-icon"></span>
                                 <span class="tooltip-content"
                                     >Sets how long still images appear in the
                                     timeline. Video clips use their natural
-                                    duration. Leave blank to use your Premiere
-                                    Pro default image duration setting</span
+                                    duration. Use a fixed duration or randomize
+                                    each image between a minimum and maximum</span
                                 >
                             </span>
                         </label>
-                        <input
-                            type="number"
-                            id="image-duration"
-                            name="image-duration"
-                            placeholder="Premiere default"
-                            min="0.1"
-                            step="0.1"
-                            onclick="this.select()"
-                        />
-                        <small
-                            style="display: block; margin-top: 4px; color: #888"
+                        <div id="fixed-image-duration-fields">
+                            <label class="duration-field-label" for="image-duration"
+                                >Fixed duration (seconds)</label
+                            >
+                            <input
+                                type="number"
+                                id="image-duration"
+                                name="image-duration"
+                                placeholder="Premiere default"
+                                min="0.1"
+                                step="0.1"
+                                onclick="this.select()"
+                            />
+                        </div>
+                        <div class="duration-randomize-toggle">
+                            <label class="checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    id="randomize-image-duration"
+                                    name="randomize-image-duration"
+                                />
+                                <span>Randomize each image duration</span>
+                            </label>
+                        </div>
+                        <div
+                            id="random-image-duration-fields"
+                            class="duration-range hidden"
+                        >
+                            <div class="duration-field">
+                                <label for="image-duration-min"
+                                    >Minimum (seconds)</label
+                                >
+                                <input
+                                    type="number"
+                                    id="image-duration-min"
+                                    name="image-duration-min"
+                                    value="2"
+                                    min="0.1"
+                                    step="0.1"
+                                    onclick="this.select()"
+                                />
+                            </div>
+                            <div class="duration-field">
+                                <label for="image-duration-max"
+                                    >Maximum (seconds)</label
+                                >
+                                <input
+                                    type="number"
+                                    id="image-duration-max"
+                                    name="image-duration-max"
+                                    value="5"
+                                    min="0.1"
+                                    step="0.1"
+                                    onclick="this.select()"
+                                />
+                            </div>
+                        </div>
+                        <small id="image-duration-help"
                             >Leave blank to use Premiere's default</small
                         >
                     </div>
